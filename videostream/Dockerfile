@@ -1,0 +1,12 @@
+FROM jrottenberg/ffmpeg
+
+ARG APP_PATH=/usr/src/app
+ARG ENTRY_FILE=entrypoint.sh
+
+RUN mkdir -p ${APP_PATH}
+COPY ${ENTRY_FILE} ${APP_PATH}
+
+WORKDIR ${APP_PATH}
+RUN chmod 744 ./${ENTRY_FILE}
+
+ENTRYPOINT ./entrypoint.sh

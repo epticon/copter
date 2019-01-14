@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  # telemetary:
+  #   build: ./telemetary
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./telemetary:/bin
+  #   ports:
+  #     - "8000:8080"
+
+  videostream:
+    build: ./videostream
+    env_file:
+      - .videostream.env
+    devices:
+      - /dev/video0:/dev/video0
