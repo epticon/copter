@@ -6,5 +6,5 @@ for word in $(grep dronekit ${requirement} -w -v); do
   package="${package} '${word}'";
 done
 
-command="pip3 install --install-option=\"--prefix=/install\" $package";
+command="pip3 install --target=/install $package";
 eval $command
