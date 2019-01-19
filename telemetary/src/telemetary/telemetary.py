@@ -2,10 +2,12 @@ import aiohttp
 import time
 import logging
 import sys
+import json
 
 from drone import Drone
-from services.broadcasting_service import *
+from services.broadcasting import BroadcastingService, BroadcastEvent
 from .exceptions import InvalidIPV4Exception
+from .handler import TelemetaryMessageHandler
 
 
 class Telemetary:
@@ -18,7 +20,9 @@ class Telemetary:
         try:
             while self.drone.connect() is False:
                 time.sleep(10)  # utilize exponential backoff algo
-                self.broadcast_connection = BroadcastingService(addresses)
+                self.broadcast_connection = BroadcastingService(
+                    addresses, self.on_message
+                )
                 self.drone.register_listener(self.broadcast_telemetary)
         except (Exception):
             pass
@@ -31,13 +35,9 @@ class Telemetary:
     """
     Action to perform on any telemetary message recieved.
     """
-
     async def on_message(self, message, client):
         if message.type == aiohttp.WSMsgType.TEXT:
-            if message.data == "close cmd":
-                return BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
-            else:
-                await client.send_str(message.data + '/answer')
+            return TelemetaryMessageHandler.handle_message(message.data)
 
         elif message.type == aiohttp.WSMsgType.ERROR or message:
             logging.error(message)
