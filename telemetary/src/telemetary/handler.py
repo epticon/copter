@@ -1,7 +1,7 @@
 import json
 
 from .router.router import TelemetaryRouter as Router
-from services.broadcasting_service import BroadcastEvent
+from services.broadcasting import BroadcastEvent
 
 
 class TelemetaryMessageHandler:

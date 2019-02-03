@@ -29,6 +29,7 @@ class Telemetary:
             # logging.error(sys.exc_info()[0])
 
     def broadcast_telemetary(self, attr_name, value):
+        # post to /telemetary path here i.e. add it to the json
         payload = {attr_name: value}
         self.broadcast_connection.send_json(payload)
 
