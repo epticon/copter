@@ -7,6 +7,6 @@
   dronekit="dronekit"
 
   sed -i 's/, int,/, unsigned int,/' /usr/include/assert.h
-  pip3 install --target=/install --upgrade "${dronekit}";
+  pip3 install "${dronekit}";
   sed -i 's/, unsigned int,/, int,/' /usr/include/assert.h
 # fi
