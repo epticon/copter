@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./telemetary/src:/app
+      - ./telemetary:/app
 
   videostream:
     build: videostream

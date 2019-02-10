@@ -11,9 +11,6 @@ RUN apk add python3-dev && \
   mkdir /install
 # py-pip openssl-dev libffi-dev  zlib-dev
 
-COPY requirements.txt scripts/install-requirements.1.sh /sc/
-RUN chmod +x /sc/install-requirements.1.sh && /sc/install-requirements.1.sh "/sc/requirements.txt"
-
 RUN sed -i 's/, int,/, unsigned int,/' /usr/include/assert.h && \
   git clone https://github.com/dronekit/dronekit-python.git && \
   cd ./dronekit-python && \
@@ -21,5 +18,8 @@ RUN sed -i 's/, int,/, unsigned int,/' /usr/include/assert.h && \
   python setup.py install && \
   sed -i 's/, unsigned int,/, int,/' /usr/include/assert.h
 
+COPY requirements.txt scripts/install-requirements.1.sh /sc/
+RUN chmod +x /sc/install-requirements.1.sh && /sc/install-requirements.1.sh "/sc/requirements.txt"
+
 WORKDIR /app
-CMD [ "python3",  "main.py"]
+CMD [ "python3",  "src/main.py"]
