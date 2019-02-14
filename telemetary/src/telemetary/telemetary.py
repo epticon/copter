@@ -3,42 +3,67 @@ import time
 import logging
 import sys
 import json
+import asyncio
+import os
 
 from drone import Drone
 from services.broadcasting import BroadcastingService, BroadcastEvent
-from .exceptions import InvalidIPV4Exception
-from .handler import TelemetaryMessageHandler
+from .exceptions import InvalidIPV4Exception, FailedDroneConnectionException
+from .handler import TelemetaryMessageHandler as Handler
 
 
 class Telemetary:
-    def __init__(self, addresses=[]):
-        self.drone = Drone()
-
+    def __init__(self, addresses):
         if type(addresses) is not type(list()):
             raise InvalidIPV4Exception
 
-        try:
-            while self.drone.connect() is False:
-                time.sleep(10)  # utilize exponential backoff algo
-                self.broadcast_connection = BroadcastingService(
-                    addresses, self.on_message
-                )
-                self.drone.register_listener(self.broadcast_telemetary)
-        except (Exception):
-            pass
-            # logging.error(sys.exc_info()[0])
+        self._addresses = addresses
+        self._vehicle = None
+        self._drone = None
+        self._broadcaster = None
 
-    def broadcast_telemetary(self, attr_name, value):
-        # post to /telemetary path here i.e. add it to the json
-        payload = {attr_name: value}
-        self.broadcast_connection.send_json(payload)
+    async def start(self):
+        while True:
+            logging.log(1, "Attempting to connect...")
+
+            try:
+                (self._drone, self._vehicle) = Telemetary.connect_to_drone()
+
+                self._broadcaster = BroadcastingService(
+                    self._addresses, Telemetary.on_message
+                )
+                self._drone.register_listener(self._broadcaster.send_telemetary)
+            except Exception as e:
+                logging.error(e)
+                time.sleep(10)
+
+    @staticmethod
+    def connect_to_drone():
+        vehicle = None
+
+        while vehicle is None:
+            try:
+                drone = Drone(os.getenv("DRONE_ADDRESS", "tcp:172.17.0.1:5762"))
+                vehicle = drone.connect()
+
+                while vehicle.version.major is None:
+                    time.sleep(2)
+
+                drone.print_status()
+
+                return (drone, vehicle)
+            except Exception as e:
+                logging.error(e)
+                time.sleep(5)
 
     """
     Action to perform on any telemetary message recieved.
     """
-    async def on_message(self, message, client):
+
+    @staticmethod
+    async def on_message(message, client):
         if message.type == aiohttp.WSMsgType.TEXT:
-            return TelemetaryMessageHandler.handle_message(message.data)
+            return Handler.process_message(message.data)
 
         elif message.type == aiohttp.WSMsgType.ERROR or message:
             logging.error(message)

@@ -2,7 +2,15 @@ import aiohttp
 
 
 class BroadcastEvent:
+    """
+    Close a given connection
+    """
+
     CLOSE = "CLOSE"
+
+    """
+    Close a given connection, and prevents further iteration over messages recieved.
+    """
     CLOSE_AND_STOP_MESSAGE_ITERATION = "CLOSE_AND_STOP_MESSAGE_ITERATION"
 
     """
@@ -19,10 +27,9 @@ class BroadcastEvent:
 class BroadcastingService:
     connection_pool = []
 
-    async def __init__(self, server_addresses=[], on_message=None):
-        self.__session = aiohttp.ClientSession()
-        self.__on_message = on_message
-        self.__server_addresses = server_addresses
+    def __init__(self, addresses=[], on_message=None):
+        self._on_message = on_message
+        self._addresses = addresses
 
     def start(self):
         self.connection_pool = list(
@@ -49,9 +56,17 @@ class BroadcastingService:
                     await client.close()
                     break
                 elif response is BroadcastEvent.TERMINATE:
-                    self.connection_pool.remove(client)
-        except:
-            self.connection_pool.remove(client)
+        except Exception as e:
+            logging.error(e)
 
-    async def send_json(self, json):
-        await map(lambda client: client.send_json(json), self.connection_pool)
+        return client
+
+    def send_json(self, json):
+        map(lambda client: client.send_json(json), self._connection_pool)
+
+    def send_telemetary(self, attr_name, value):
+        print(attr_name)
+        print(value)
+        payload = {"route": "/telemetary", "data": {attr_name: value}}
+
+        self.send_json(payload)
