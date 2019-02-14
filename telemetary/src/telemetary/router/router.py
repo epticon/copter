@@ -1,7 +1,7 @@
 import logging
 import json
 
-from endpoints import *
+from . import EXECUTE_COMMAND
 
 
 class TelemetaryRouter:
@@ -21,5 +21,5 @@ class TelemetaryRouter:
         except:
             logging.error("Invalid route action: {}".format(event))
 
-    async def get_user(self, client, body=None, params=None,):
-        await client.send_str(body + '/answer')
+    def get_user(self, client, body=None, params=None,):
+        client.send_str(body + '/answer')

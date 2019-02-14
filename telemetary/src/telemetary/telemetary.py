@@ -32,6 +32,9 @@ class Telemetary:
                 self._broadcaster = BroadcastingService(
                     self._addresses, Telemetary.on_message
                 )
+
+                await self._broadcaster.start()
+
                 self._drone.register_listener(self._broadcaster.send_telemetary)
             except Exception as e:
                 logging.error(e)
