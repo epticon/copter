@@ -1,5 +1,6 @@
 import aiohttp
 import logging
+import time
 
 
 class BroadcastEvent:
@@ -49,30 +50,35 @@ class BroadcastingService:
     async def _establish_connection(self, address):
         client = None
 
-        try:
-            connector = aiohttp.TCPConnector(verify_ssl=False, limit=1)
+        while True:
+            try:
+                connector = aiohttp.TCPConnector(verify_ssl=False, limit=1)
 
-            async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.ws_connect(address) as client:
-                    async for message in client:
-                        response = await self._on_message(message, client)
+                async with aiohttp.ClientSession(connector=connector) as session:
+                    async with session.ws_connect(address) as client:
+                        async for message in client:
+                            response = await self._on_message(message, client)
 
-                        if response is BroadcastEvent.STOP_MESSAGE_ITERATION:
-                            break
-                        elif response is BroadcastEvent.CLOSE:
-                            await client.close()
-                        elif (
-                            response is BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
-                        ):
-                            await client.close()
-                        elif (
-                            response is BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
-                        ):
-                            break
-                        elif response is BroadcastEvent.TERMINATE:
-                            self._connection_pool.remove(client)
-        except Exception as e:
-            logging.error(e)
+                            if response is BroadcastEvent.STOP_MESSAGE_ITERATION:
+                                break
+                            elif response is BroadcastEvent.CLOSE:
+                                await client.close()
+                            elif (
+                                response
+                                is BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
+                            ):
+                                await client.close()
+                            elif (
+                                response
+                                is BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
+                            ):
+                                break
+                            elif response is BroadcastEvent.TERMINATE:
+                                self._connection_pool.remove(client)
+                break
+            except Exception as e:
+                time.sleep(3)
+                logging.error(e)
 
         return client
 
