@@ -11,7 +11,7 @@ class Drone:
     """
 
     def connect(self):
-        self._vehicle = connect(self._address, wait_ready=True, heartbeat_timeout=180)
+        self._vehicle = connect(self._address, wait_ready=True, heartbeat_timeout=1000)
 
         return self._vehicle
 
