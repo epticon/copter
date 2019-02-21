@@ -6,6 +6,8 @@ import json
 import asyncio
 import os
 
+# from multiprocessing import Process
+
 from drone import Drone
 from services.broadcasting import BroadcastingService
 from .exceptions import InvalidIPV4Exception, FailedDroneConnectionException
@@ -42,8 +44,6 @@ class Telemetary:
         self._drone = None
 
     def start(self):
-        loop = asyncio.get_event_loop()
-
         while True:
             print("Attempting to connect...")
             self._drone = None
@@ -52,17 +52,15 @@ class Telemetary:
             try:
                 (self._drone, self._vehicle) = connect_to_drone(self._drone_address)
 
-                # Start broadcating server
                 broadcast = BroadcastingService(
                     address=self._broadcast_address,
                     port=self._broadcast_port,
                     path=self._broadcast_path,
+                    drone=self._drone,
                 )
 
-                broadcast.start(loop)
+                broadcast.start(asyncio.get_event_loop())
 
-                # self._drone.register_listener(self._broadcaster.send_telemetary)
             except Exception as e:
                 logging.error(e)
-                loop.close()
                 time.sleep(5)
