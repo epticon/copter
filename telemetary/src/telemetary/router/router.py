@@ -1,25 +1,27 @@
 import logging
 import json
+from .endpoints import EXECUTE_COMMAND
 
-from . import EXECUTE_COMMAND
+routes = {"/command": "get_user"}
 
 
-class TelemetaryRouter:
-    routes = {
-        EXECUTE_COMMAND: 'get_user'
-    }
+class Router:
+    def __init__(self, client):
+        self._client = client
 
-    def match(self, route, body=None, params=None):
-        invalidRoute = "Invalid"
-        event = TelemetaryRouter.routes.get(route, invalidRoute)
-        if event is invalidRoute:
-            raise invalidRoute
-
+    def match(self, route=None, body=None, params=None):
         try:
-            # Executes the given function name.
-            return eval('self.{}({}, {})'.format(event, body, params))
-        except:
-            logging.error("Invalid route action: {}".format(event))
+            command = "self.{}({}, {})".format(routes[route], body, params)
+            print(command)
+            print(eval(command))
+        except IndexError:
+            logging.error("Invalid route specified: {}".format(route))
+        except Exception as e:
+            logging.error(str(e))
 
-    def get_user(self, client, body=None, params=None,):
-        client.send_str(body + '/answer')
+    def get_user(self, body=None, params=None):
+        print("sending message from `get_user`")
+        try:
+            self._client.sendMessage("response")
+        except Exception as err:
+            logging.error(err)

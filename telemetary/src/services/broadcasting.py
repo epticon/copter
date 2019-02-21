@@ -1,93 +1,64 @@
 import aiohttp
 import logging
 import time
+import asyncio
+import json
+from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
+
+from telemetary.handler import TelemetaryMessageHandler as Handler
+
+try:
+    import asyncio
+except ImportError:
+    import trollius as asyncio
 
 
-class BroadcastEvent:
-    """
-    Close a given connection
-    """
+class RemoteSwarmProtocol(WebSocketClientProtocol):
+    def onConnect(self, response):
+        print("Server connected: {0}".format(response.peer))
 
-    CLOSE = "CLOSE"
+    async def onOpen(self):
+        print("WebSocket connection open.")
 
-    """
-    Close a given connection, and prevents further iteration over messages recieved.
-    """
-    CLOSE_AND_STOP_MESSAGE_ITERATION = "CLOSE_AND_STOP_MESSAGE_ITERATION"
+    def onMessage(self, payload, isBinary):
+        if isBinary is not True:
+            Handler.process_message(self, str(payload.decode("utf8")))
 
-    """
-    Terminates any further iteration of message for the current message stream.
-    """
-    STOP_MESSAGE_ITERATION = "STOP_MESSAGE_ITERATION"
-
-    """
-    Indicates that a given client connection has been erminated.
-    """
-    TERMINATE = "TERMINATE"
+    def onClose(self, wasClean, code, reason):
+        print("WebSocket connection closed: {0}".format(reason))
 
 
 class BroadcastingService:
-    connection_pool = []
+    def __init__(self, addresses=[]):
+        self._factory = WebSocketClientFactory(addresses[0])
+        self._factory.protocol = RemoteSwarmProtocol
 
-    def __init__(self, addresses=[], on_message=None):
-        self._on_message = on_message
-        self._addresses = addresses
+    """
+    Performs a fault tolerant connection (re-connects on diconnect).
+    """
 
-    async def start(self):
-        self._connection_pool = await self._map_connection(self._addresses)
-
-    async def _map_connection(self, addresses):
-        pool = []
-
-        for address in iter(addresses):
-            client = await self._establish_connection(address)
-
-            if client is not None:
-                pool.append(client)
-
-        return pool
-
-    async def _establish_connection(self, address):
-        client = None
-
+    def start(self, loop=asyncio.get_event_loop()):
         while True:
+            coro = loop.create_connection(self._factory, "172.17.0.1", 9090)
+            (server, _) = loop.run_until_complete(coro)
+
             try:
-                connector = aiohttp.TCPConnector(verify_ssl=False, limit=1)
-
-                async with aiohttp.ClientSession(connector=connector) as session:
-                    async with session.ws_connect(address) as client:
-                        async for message in client:
-                            response = await self._on_message(message, client)
-
-                            if response is BroadcastEvent.STOP_MESSAGE_ITERATION:
-                                break
-                            elif response is BroadcastEvent.CLOSE:
-                                await client.close()
-                            elif (
-                                response
-                                is BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
-                            ):
-                                await client.close()
-                            elif (
-                                response
-                                is BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
-                            ):
-                                break
-                            elif response is BroadcastEvent.TERMINATE:
-                                self._connection_pool.remove(client)
+                loop.run_forever()
+            except KeyboardInterrupt:
                 break
             except Exception as e:
-                time.sleep(3)
                 logging.error(e)
-
-        return client
-
-    def send_json(self, json):
-        map(lambda client: client.send_json(json), self._connection_pool)
+                print("Attempting to reconnect in 5 seconds.")
+                time.sleep(5)
+            finally:
+                server.close()
 
     def send_telemetary(self, attr_name, value):
+        def send_json(json):
+            pass
+
         print(attr_name)
         print(value)
         payload = {"route": "/telemetary", "data": {attr_name: value}}
 
-        self.send_json(payload)
+        send_json(payload)

@@ -7,4 +7,5 @@ class FailedDroneConnectionException(Exception):
 
 
 class RouteMissingException(Exception):
-    pass
+    def __str__(self):
+        return "The specified route is missing"

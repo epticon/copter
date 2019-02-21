@@ -1,33 +1,31 @@
 import json
+import logging
 
-from .router.router import TelemetaryRouter as Router
-from services.broadcasting import BroadcastEvent
+from .router.router import Router
 from .exceptions import RouteMissingException
+
+ROUTE = "route"
+
+
+def route_key_exists(payload):
+    json_payload = json.loads(payload)
+    return ROUTE in json_payload
 
 
 class TelemetaryMessageHandler:
+
+    """
+    Action to perform on any telemetary message recieved.
+    """
+
     @staticmethod
-    def process_message(message):
+    def process_message(client, payload):
         try:
-            request = TelemetaryMessageHandler.validate_message(message)
-            return Router().match(route=request.route, body=request)
-        except RouteMissingException as e:
-            print("Route is missing.")
-            pass
+            if route_key_exists(payload) == False:
+                raise RouteMissingException
 
-    @staticmethod
-    def validate_message(message):
-        json_message = json.loads(message)
-
-        if "route" not in json_message:
-            print("not in")
-            raise RouteMissingException
-        else:
-            print(json_message)
-
-        return json_message
-
-    @staticmethod
-    def handle_drone_command(client):
-        # Pilot sends a command to be executed on the drone
-        return BroadcastEvent.CLOSE_AND_STOP_MESSAGE_ITERATION
+            # still confused at why this has to be done twice
+            data = json.loads(json.loads(payload))
+            Router(client).match(route=data[ROUTE], body=data)
+        except Exception as err:
+            logging.error(str(err))
