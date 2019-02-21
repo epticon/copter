@@ -3,10 +3,10 @@ import logging
 import time
 import asyncio
 import json
-from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
+from autobahn.asyncio.websocket import WebSocketClientFactory
 
-from telemetary.handler import TelemetaryMessageHandler as Handler
 from utils.formatting import create_websocket_url
+from .protocol import SwarmWebsocketProtocol
 
 try:
     import asyncio
@@ -14,22 +14,7 @@ except ImportError:
     import trollius as asyncio
 
 
-class SwarmWebsocketProtocol(WebSocketClientProtocol):
-    def onConnect(self, response):
-        print("Server connected: {0}".format(response.peer))
-
-    async def onOpen(self):
-        print("WebSocket connection open.")
-
-    def onMessage(self, payload, isBinary):
-        if isBinary is not True:
-            Handler.process_message(self, str(payload.decode("utf8")))
-
-    def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {0}".format(reason))
-
-
-class BroadcastingService:
+class TelemetaryServer:
     def __init__(self, address, port, path, drone):
         self._drone = drone
         self._address = address
@@ -48,7 +33,7 @@ class BroadcastingService:
     def start(self, loop=asyncio.new_event_loop()):
         # This lambda function is defined to enable coercing the drone
         # state changes, before forwarding to the remote server.
-        sendTelemetary = lambda vehicle, attr_name, value: self.send_telemetary(
+        sendTelemetary = lambda vehicle, attr_name, value: self._send_telemetary(
             vehicle, attr_name, value
         )
 
@@ -78,6 +63,7 @@ class BroadcastingService:
     Fowards a drone telemetary message to the remote server.
     """
 
-    def send_telemetary(self, vehicle, attr_name, value):
+    def _send_telemetary(self, vehicle, attr_name, value):
         payload = {"route": "/telemetary", "data": {attr_name: f"{value}"}}
-        self._transport.sendMessage(str(payload).encode("utf8"))
+
+        self._transport.sendMessage(json.dumps(payload).encode("utf8"))

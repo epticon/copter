@@ -11,13 +11,11 @@ class Router:
 
     def match(self, route=None, body=None, params=None):
         try:
-            command = "self.{}({}, {})".format(routes[route], body, params)
-            print(command)
-            print(eval(command))
+            eval("self.{}({}, {})".format(routes[route], body, params))
         except IndexError:
             logging.error("Invalid route specified: {}".format(route))
-        except Exception as e:
-            logging.error(str(e))
+        except Exception as err:
+            logging.error(err)
 
     def get_user(self, body=None, params=None):
         print("sending message from `get_user`")

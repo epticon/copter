@@ -1,8 +1,8 @@
 import json
 import logging
 
-from .router.router import Router
-from .exceptions import RouteMissingException
+from ..router.router import Router
+from ..exceptions import RouteMissingException
 
 ROUTE = "route"
 
