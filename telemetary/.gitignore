@@ -1,5 +1,5 @@
 # Flight logs
-flight-logs.txt
+*-logs.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
