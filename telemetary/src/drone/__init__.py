@@ -5,6 +5,7 @@ from .listeners import attributes_listeners
 class Drone:
     def __init__(self, address="tcp:172.17.0.1:5762"):
         self._address = address
+        self._listener = None
 
     """
         Attempts to connect to drone with previously given address
@@ -29,10 +30,17 @@ class Drone:
     def send_raw_command(self, mavlink_command):
         self._vehicle.send_mavlink(mavlink_command)
 
-    def register_listener(self, listener=None):
+    def register_listeners(self, listener=None):
+        self._listener = listener
+
         if listener is not None:
             for events in attributes_listeners:
-                self._vehicle.add_attribute_listener(events, listener)
+                self._vehicle.add_attribute_listener(events, self._listener)
+
+    def unregister_listeners(self):
+        if self._listener is not None:
+            for event in attributes_listeners:
+                self._vehicle.remove_attribute_listener(event, self._listener)
 
     def print_status(self):
         print("Get all vehicle attribute values:")
