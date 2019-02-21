@@ -5,14 +5,18 @@ from ..router.router import Router
 from ..exceptions import RouteMissingException
 
 ROUTE = "route"
+MESSAGE = "message"
 
 
 def route_key_exists(payload):
-    json_payload = json.loads(payload)
-    return ROUTE in json_payload
+    return ROUTE in payload
 
 
-class TelemetaryMessageHandler:
+def is_error_message(payload):
+    return "message" in payload
+
+
+class MessageHandler:
 
     """
     Action to perform on any telemetary message recieved.
@@ -21,11 +25,24 @@ class TelemetaryMessageHandler:
     @staticmethod
     def process_message(client, payload):
         try:
-            if route_key_exists(payload) == False:
-                raise RouteMissingException
+            MessageHandler.validate(payload)
 
-            # still confused at why this has to be done twice
+            # Still confused at why json.loads() has to be done twice.
             data = json.loads(json.loads(payload))
             Router(client).match(route=data[ROUTE], body=data)
         except Exception as err:
             logging.error(str(err))
+
+    @staticmethod
+    def validate(payload):
+        payload = json.loads(payload)
+        error = None
+
+        if is_error_message(payload):
+            error = f"Server: {payload[MESSAGE]}"
+        elif route_key_exists(payload) == False:
+            error = f"Client: {str(RouteMissingException())}"
+        else:
+            return None
+
+        raise Exception(error)
