@@ -11,12 +11,12 @@ from services.broadcasting import BroadcastingService
 from .exceptions import InvalidIPV4Exception, FailedDroneConnectionException
 
 
-def connect_to_drone():
+def connect_to_drone(address):
     vehicle = None
 
     while vehicle is None:
         try:
-            drone = Drone(os.getenv("DRONE_ADDRESS", "tcp:172.17.0.1:5762"))
+            drone = Drone(address)
             vehicle = drone.connect()
 
             while vehicle.version.major is None:
@@ -31,11 +31,13 @@ def connect_to_drone():
 
 
 class Telemetary:
-    def __init__(self, addresses):
-        if type(addresses) is not type(list()):
-            raise InvalidIPV4Exception
+    def __init__(self, **kwargs):
+        self._drone_address = kwargs.get("drone_address", "tcp:127.0.0.1:5762")
+        self._broadcast_address = kwargs.get("broadcast_address", "127.0.0.1")
+        self._broadcast_port = kwargs.get("broadcast_port", 8080)
+        self._broadcast_path = kwargs.get("broadcast_path", "/ws")
 
-        self._addresses = addresses
+        # Perform validation of all the above addresses
         self._vehicle = None
         self._drone = None
 
@@ -46,12 +48,18 @@ class Telemetary:
             print("Attempting to connect...")
             self._drone = None
             self._vehicle = None
+
             try:
-                # Start drone
-                (self._drone, self._vehicle) = connect_to_drone()
+                (self._drone, self._vehicle) = connect_to_drone(self._drone_address)
 
                 # Start broadcating server
-                BroadcastingService(self._addresses).start(loop)
+                broadcast = BroadcastingService(
+                    address=self._broadcast_address,
+                    port=self._broadcast_port,
+                    path=self._broadcast_path,
+                )
+
+                broadcast.start(loop)
 
                 # self._drone.register_listener(self._broadcaster.send_telemetary)
             except Exception as e:

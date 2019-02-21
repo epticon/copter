@@ -6,6 +6,7 @@ import json
 from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
 
 from telemetary.handler import TelemetaryMessageHandler as Handler
+from utils.formatting import create_websocket_url
 
 try:
     import asyncio
@@ -29,9 +30,14 @@ class RemoteSwarmProtocol(WebSocketClientProtocol):
 
 
 class BroadcastingService:
-    def __init__(self, addresses=[]):
-        self._factory = WebSocketClientFactory(addresses[0])
+    def __init__(self, address, port, path):
+        self._factory = WebSocketClientFactory(
+            create_websocket_url(address, port, path)
+        )
         self._factory.protocol = RemoteSwarmProtocol
+        self._address = address
+        self._port = port
+        self._path = path
 
     """
     Performs a fault tolerant connection (re-connects on diconnect).
@@ -39,7 +45,7 @@ class BroadcastingService:
 
     def start(self, loop=asyncio.get_event_loop()):
         while True:
-            coro = loop.create_connection(self._factory, "172.17.0.1", 9090)
+            coro = loop.create_connection(self._factory, self._address, self._port)
             (server, _) = loop.run_until_complete(coro)
 
             try:
