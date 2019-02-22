@@ -28,15 +28,14 @@ def parse_logs(path, output_path):
                 # is array value
                 string_array = str(inner_data[1:-1]).replace(" ", "").split(",")
                 final_json.append({key: list(map(lambda x: float(x), string_array))})
+
             elif ":" in inner_data:
                 # is inner value
                 splitted_data = inner_data.split(":")
                 key = pascal_to_snake_case(splitted_data[0])
                 assigments = splitted_data[1].split(",")
-
-                # for a in assigments:
-                #     parse_assignment(a)
                 values = list(map(lambda x: parse_assignment(x), assigments))
+
                 final_json.append({key: values})
             else:
                 final_json.append({key: float(inner_data)})
