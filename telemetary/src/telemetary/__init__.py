@@ -8,6 +8,7 @@ import os
 
 from drone import Drone
 from .server import TelemetaryServer
+from . import controller
 
 
 def connect_to_drone(address):

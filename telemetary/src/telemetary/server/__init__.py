@@ -65,5 +65,4 @@ class TelemetaryServer:
 
     def _send_telemetary(self, vehicle, attr_name, value):
         payload = {"route": "/telemetary", "data": {attr_name: f"{value}"}}
-
         self._transport.sendMessage(json.dumps(payload).encode("utf8"))
