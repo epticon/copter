@@ -10,9 +10,7 @@ def load_class(full_class_string):
     module_path = ".".join(class_data[:-1])
     class_str = class_data[-1]
     module = importlib.import_module(module_path)
-
-    # Finally, we retrieve the Class
-    return getattr(module, class_str)
+    return getattr(module, class_str)  # retrieve the class
 
 
 def load_method(class_instance, class_method_string):

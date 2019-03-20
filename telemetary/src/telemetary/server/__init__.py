@@ -26,11 +26,11 @@ class TelemetaryServer:
         self._factory.protocol = SwarmWebsocketProtocol
         self._factory.drone = self._drone
 
-    """
-    Performs a fault tolerant connection (re-connects on diconnect).
-    """
-
     def start(self, loop=asyncio.new_event_loop()):
+        """
+        Performs a fault tolerant connection (re-connects on diconnect).
+        """
+
         # This lambda function is defined to enable coercing the drone
         # state changes, before forwarding to the remote server.
         sendTelemetary = lambda vehicle, attr_name, value: self._send_telemetary(
@@ -60,10 +60,10 @@ class TelemetaryServer:
                 self._drone.close()
                 self._server.close()
 
-    """
-    Fowards a drone telemetary message to the remote server.
-    """
-
     def _send_telemetary(self, vehicle, attr_name, value):
+        """
+        Fowards a drone telemetary message to the remote server.
+        """
+
         payload = {"route": "/telemetary", "data": {attr_name: f"{value}"}}
         self._transport.sendMessage(json.dumps(payload).encode("utf8"))

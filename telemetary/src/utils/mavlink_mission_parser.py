@@ -6,7 +6,8 @@ class MavlinkMissionParser(object):
     @staticmethod
     def from_string(cmds):
         """
-        Todo: Handle for when the user sends a clear message in between a mission.
+        Parses a given string of values into equivalent mavlink
+        commands or recognized custom commands.
         """
 
         missionlist = []

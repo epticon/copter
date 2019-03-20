@@ -17,12 +17,12 @@ class MessageHandler:
 
         return {}
 
-    """
-    Action to perform on any telemetary message recieved.
-    """
-
     @staticmethod
     def process_message(client, drone, payload):
+        """
+        Action to perform on any telemetary message recieved.
+        """
+
         try:
             MessageHandler.validate(payload)
             # Still confused at why json.loads() has to be done twice.

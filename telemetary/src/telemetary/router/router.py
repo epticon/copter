@@ -5,11 +5,6 @@ from .endpoints import EXECUTE_COMMAND
 from utils import loaders
 
 
-"""
-Dynamically load a class from a string.
-"""
-
-
 class Router:
     def __init__(self, client, drone, routes, controller_path="telemetary.controller"):
         self._client = client
