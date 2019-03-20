@@ -23,11 +23,10 @@ def connect_to_drone(address):
                 time.sleep(2)
 
             drone.print_status()
-            return (drone, vehicle)
+            return drone
 
         except Exception as e:
             logging.error(e)
-            time.sleep(5)
 
 
 class Telemetary:
@@ -45,19 +44,17 @@ class Telemetary:
         while True:
             print("Attempting to connect...")
             self._drone = None
-            self._vehicle = None
 
             try:
-                (self._drone, self._vehicle) = connect_to_drone(self._drone_address)
-
-                broadcast = TelemetaryServer(
+                self._drone = connect_to_drone(self._drone_address)
+                server = TelemetaryServer(
                     address=self._broadcast_address,
                     port=self._broadcast_port,
                     path=self._broadcast_path,
                     drone=self._drone,
                 )
 
-                broadcast.start(asyncio.get_event_loop())
+                server.start(asyncio.get_event_loop())
 
             except Exception as e:
                 logging.error(e)

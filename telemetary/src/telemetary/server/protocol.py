@@ -4,6 +4,9 @@ from .handler import MessageHandler
 
 
 class SwarmWebsocketProtocol(WebSocketClientProtocol):
+    def drone(self):
+        return self.factory.drone
+
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
 
@@ -12,7 +15,9 @@ class SwarmWebsocketProtocol(WebSocketClientProtocol):
 
     def onMessage(self, payload, isBinary):
         if isBinary is not True:
-            MessageHandler.process_message(self, str(payload.decode("utf8")))
+            MessageHandler.process_message(
+                client=self, drone=self.drone(), payload=str(payload.decode("utf8"))
+            )
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))

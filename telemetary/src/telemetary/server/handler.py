@@ -22,13 +22,13 @@ class MessageHandler:
     """
 
     @staticmethod
-    def process_message(client, payload):
+    def process_message(client, drone, payload):
         try:
             MessageHandler.validate(payload)
             # Still confused at why json.loads() has to be done twice.
             data = json.loads(json.loads(payload))
 
-            router = Router(client, MessageHandler.get_routes())
+            router = Router(client, drone, MessageHandler.get_routes())
             router.match(route=data[ROUTE], body=data)
 
         except Exception as err:

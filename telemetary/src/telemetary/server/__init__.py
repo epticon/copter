@@ -21,10 +21,10 @@ class TelemetaryServer:
         self._port = port
         self._path = path
 
-        self._factory = WebSocketClientFactory(
-            create_websocket_url(address, port, path)
-        )
+        url = create_websocket_url(address, port, path)
+        self._factory = WebSocketClientFactory(url)
         self._factory.protocol = SwarmWebsocketProtocol
+        self._factory.drone = self._drone
 
     """
     Performs a fault tolerant connection (re-connects on diconnect).
@@ -42,7 +42,7 @@ class TelemetaryServer:
             (self._server, self._transport) = loop.run_until_complete(coro)
 
             try:
-                self._drone.register_listeners(sendTelemetary)
+                # self._drone.register_listeners(sendTelemetary)
 
                 # Another approach that might be possible, is to run_forever
                 # on a seperate process. Although, where I feel there might
@@ -57,6 +57,7 @@ class TelemetaryServer:
                 time.sleep(5)
             finally:
                 self._drone.unregister_listeners()
+                self._drone.close()
                 self._server.close()
 
     """
