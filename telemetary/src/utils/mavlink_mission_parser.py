@@ -10,8 +10,11 @@ class MavlinkMissionParser(object):
         commands or recognized custom commands.
         """
 
+        if len(cmds) == 0:
+            return []
+
         missionlist = []
-        for line in cmds.split("\n"):
+        for line in cmds:
             linearray = line.split("\t")
             if len(linearray) == 1:
                 cmd = int(linearray)

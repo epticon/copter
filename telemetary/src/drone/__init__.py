@@ -21,15 +21,16 @@ class Drone(DroneCommand):
             print("Waiting for vehicle to initialise...")
             time.sleep(1)
 
-        print("Arming motors")
-        self._vehicle.guided_mode()  # Copter should arm in GUIDED mode
-        self._vehicle.armed = True
-        self._vehicle.auto_mode()
+        # print("Arming motors")
+        # self.guided_mode()  # Copter should arm in GUIDED mode
+        # self._vehicle.armed = True
+        self.auto_mode()
 
     def connect(self):
         """
         Attempts to connect to drone with previously given address.
         """
+
         self._vehicle = connect(self._address, wait_ready=True)
         self.arm_motors()
         return self._vehicle
@@ -38,6 +39,7 @@ class Drone(DroneCommand):
         """
         Sends a given MAVLINK command to the given drone.
         """
+
         self._vehicle.send_mavlink(mavlink_command)
 
     def upload_mission(self, missions):
