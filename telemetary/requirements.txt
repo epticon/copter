@@ -2,3 +2,4 @@ aiohttp>=3.5
 asyncio>=3.0
 dronekit>=2.0
 python-dotenv>=0.10
+autobahn>=19.3
