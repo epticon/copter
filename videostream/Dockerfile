@@ -1,4 +1,4 @@
-FROM jrottenberg/ffmpeg
+FROM jrottenberg/ffmpeg:3.4-alpine
 
 ARG APP_PATH=/usr/src/app
 ARG ENTRY_FILE=entrypoint.sh
