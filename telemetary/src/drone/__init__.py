@@ -49,11 +49,12 @@ class Drone(DroneCommand):
 
         cmds = self._vehicle.commands
         for cmd in missions:
+            print(cmd)
             if isinstance(cmd, CustomCommand):  # custom command
                 cmd.exec(cmds)  # This is passed by reference.
             else:
                 cmds.add(cmd)
-        self._vehicle.commands.upload()
+        cmds.upload()
 
     def register_listeners(self, listener=None):
         """

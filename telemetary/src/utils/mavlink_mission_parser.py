@@ -16,10 +16,11 @@ class MavlinkMissionParser(object):
         missionlist = []
         for line in cmds:
             linearray = line.split("\t")
+            print(linearray)
             if len(linearray) == 1:
-                cmd = int(linearray)
+                cmd = int(linearray[0])
                 if cmd >= 700 and cmd <= 800:  # is custom command
-                    return CustomCommand(cmd)
+                    missionlist.append(CustomCommand(cmd))
                 continue
 
             ln_frame = 0

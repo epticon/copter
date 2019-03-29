@@ -17,7 +17,10 @@ def get_key(value):
 
 
 def upload_mission(cmd, drone):
-    drone.upload_mission(MavlinkMissionParser.from_string(cmd))
+    print("uploading mission")
+    mis = MavlinkMissionParser.from_string(cmd)
+    print(mis)
+    drone.upload_mission(mis)
 
 
 def execute_single_command(cmd, drone):

@@ -4,7 +4,7 @@ services:
   telemetary:
     build: telemetary
     env_file:
-      - .env
+      - ./telemetary/.env
     volumes:
       - ./telemetary:/app
 
