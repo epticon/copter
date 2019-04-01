@@ -57,5 +57,6 @@ class Telemetary:
                 server.start(asyncio.get_event_loop())
 
             except Exception as e:
+                self._drone.close()
                 logging.error(e)
                 time.sleep(5)
