@@ -8,6 +8,17 @@ services:
     volumes:
       - ./telemetary:/app
 
+  simulator:
+    build:
+      context: ./telemetary
+      dockerfile: Dockerfile-simulator
+    #stdin_open: true
+    tty: true
+    env_file:
+      - ./telemetary/.env.simulator
+    volumes:
+      - ./telemetary:/app
+
   videostream:
     build: videostream
     env_file:

@@ -1,0 +1,46 @@
+FROM ubuntu:18.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
+  python-matplotlib \
+  python-serial \
+  python-wxgtk3.0 \
+  python-wxtools \
+  python-lxml \
+  python-scipy \
+  python-opencv \
+  ccache \
+  gawk \
+  git \
+  python-pip \
+  python-pexpect \
+  libxml2-dev \
+  libxslt-dev \
+  python3-pip \
+  python3-dev
+
+RUN python3 -V
+RUN pip install future pymavlink MAVProxy
+RUN pip3 install lxml
+
+ENV PATH=$PATH:/ardupilot/Tools/autotest:/jsbsim/src:/usr/lib/ccache
+
+RUN git clone git://github.com/ArduPilot/ardupilot.git && \
+  cd ardupilot \
+  && git submodule update --init --recursive \
+  && cd ArduCopter \
+  && timeout 1200 sim_vehicle.py -w
+
+RUN git clone https://github.com/dronekit/dronekit-python.git && \
+  cd dronekit-python && \
+  python3 setup.py build && \
+  python3 setup.py install
+
+COPY requirements.txt scripts/install-requirements.1.sh /sc/
+RUN chmod +x /sc/install-requirements.1.sh && /sc/install-requirements.1.sh "/sc/requirements.txt"
+WORKDIR /app
+RUN pip install --upgrade pip
+RUN pip3 install --upgrade pip
+RUN pip install --upgrade pymavlink
+RUN pip3 install --upgrade pymavlink
+ENTRYPOINT ["./scripts/start-simulator.sh"]
+
