@@ -21,10 +21,9 @@ class Drone(DroneCommand):
             print("Waiting for vehicle to initialise...")
             time.sleep(1)
 
-        # print("Arming motors")
         # self.guided_mode()  # Copter should arm in GUIDED mode
-        # self._vehicle.armed = True
-        self.auto_mode()
+        print("Arming motors")
+        self._vehicle.armed = True
 
     def connect(self):
         """
@@ -32,7 +31,7 @@ class Drone(DroneCommand):
         """
 
         self._vehicle = connect(self._address, wait_ready=True)
-        self.arm_motors()
+        self.auto_mode()
         return self._vehicle
 
     def send_mavlink(self, mavlink_command):
@@ -54,7 +53,10 @@ class Drone(DroneCommand):
                 cmd.exec(cmds)  # This is passed by reference.
             else:
                 cmds.add(cmd)
+
         cmds.upload()
+        time.sleep(2)
+        self.arm_motors()
 
     def register_listeners(self, listener=None):
         """
