@@ -17,9 +17,7 @@ def get_key(value):
 
 
 def upload_mission(cmd, drone):
-    print("uploading mission")
     mis = MavlinkMissionParser.from_string(cmd)
-    print(mis)
     drone.upload_mission(mis)
 
 
@@ -31,10 +29,11 @@ def execute_single_command(cmd, drone):
         "auto_mode": partial(drone.auto_mode),
         "guided_mode": partial(drone.guided_mode),
         "set_home": partial(drone.set_home, **args),
-        "clear_command": partial(drone.clear_command),
+        "clear_command": partial(drone.clear_all_commands),
         "navigate_to": partial(drone.navigate_to, **args),
         "return_home": partial(drone.return_home, **args),
         "set_flight_height": partial(drone.set_flight_height, **args),
+        "start_mission": partial(drone.start_mission),
     }
 
     switch.get(key, lambda: None)()
@@ -53,8 +52,7 @@ class CommandController(BaseController):
 
             instruction = req["body"]["instruction"]
             key = get_key(instruction)
-            args = {"cmd": instruction[key], "drone": self._drone}
-            switch.get(key, lambda x, y: None)(**args)
+            switch.get(key, lambda x, y: None)(cmd=instruction[key], drone=self._drone)
 
         except (IndexError):
             print("No value for instruction was provided.")

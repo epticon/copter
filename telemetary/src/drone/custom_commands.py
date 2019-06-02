@@ -8,5 +8,3 @@ class CustomCommand(object):
     def exec(self, cmds):
         if self._code == CUSTOM_WAYPOINTS_CLEAR:
             cmds.clear()
-
-        return cmds

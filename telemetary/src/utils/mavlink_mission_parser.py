@@ -1,5 +1,6 @@
 from dronekit import Command
 from drone.custom_commands import CustomCommand
+from dronekit.mavlink import mavutil
 
 
 class MavlinkMissionParser(object):
@@ -16,17 +17,18 @@ class MavlinkMissionParser(object):
         missionlist = []
         for line in cmds:
             linearray = line.split("\t")
-            print(linearray)
             if len(linearray) == 1:
                 cmd = int(linearray[0])
                 if cmd >= 700 and cmd <= 800:  # is custom command
                     missionlist.append(CustomCommand(cmd))
                 continue
 
-            ln_frame = 0
+            ln_frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
             ln_currentwp = 0
-            ln_autocontinue = 1
+            ln_autocontinue = 0
             ln_command = int(linearray[0])
+            # if ln_command == 13:
+            #     ln_command = mavutil.mavlink.MAV_CMD_NAV_WAYPOINT
             ln_param1 = float(linearray[1])
             ln_param2 = float(linearray[2])
             ln_param3 = float(linearray[3])
