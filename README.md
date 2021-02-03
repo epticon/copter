@@ -1,3 +1,3 @@
-# Cepticon Copter
+# Epticon Copter
 
 Client running on onboard computer of the copter.
